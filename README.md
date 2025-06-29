@@ -1,4 +1,59 @@
-# AI-AGENT
-AI Code Explainer using Google Gemini API. This tool reads code from a file and explains its inputs, variables, expected output, and any errors. Ideal for learners and developers to understand code quickly. Powered by google-generativeai with Python. Simple, effective, and AI-driven.
-This project is an AI-powered code explainer built using the Google Gemini API. It is designed to help developers, students, and beginners understand code easily by breaking it down into simple explanations. The tool reads code from a file and sends it to the Gemini AI model, which analyzes the code and provides a detailed breakdown. It identifies the inputs required by the code, lists all the variables along with their purpose, and explains the expected output the code will produce. Additionally, if there are any errors within the code, whether they are syntax errors or logical errors, the AI points them out clearly along with the line or part where the error occurs. This makes the tool extremely useful for debugging, learning, and understanding complex code snippets quickly. The project uses Python as the programming language and integrates with Google’s Gemini AI through the generative AI library. The API key is securely managed using environment variables for safety. The goal of this tool is to make code analysis faster and more accessible for anyone struggling with understanding unfamiliar code or debugging issues. Once the user runs the script, the tool fetches the code, sends it to the AI model, and then displays the explanation in an easy-to-read format directly in the terminal. It supports analyzing Python code and can potentially be extended to support other programming languages. This project not only helps in understanding how the code works but also acts as a learning assistant for those who are new to programming. In the future, this tool can be expanded into a web application or integrated into chatbots to make code analysis even more interactive and user-friendly.
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
 
+
+load_dotenv()
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+model = genai.GenerativeModel('gemini-2.5-flash')
+
+
+def readcode(filepath):
+    """Read code from a file."""
+    try:
+        with open(filepath, "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        print("❌ Error: code file not found.")
+        exit(1)
+
+
+def coder(code):
+    """Explain code, inputs, variables, expected output, and errors."""
+    prompt = f"""
+You are a professional programming assistant.
+
+Given the following code, do the following:
+1. List the **Inputs** (if any).
+2. List all **Variables** used and their purposes.
+3. Give the **Expected Output** of the code.
+4. If the code contains an **error**, specify the error and mention the line or part where it occurs.
+
+Code:
+{code}
+
+Your explanation should be structured as:
+- Input:
+- Variables:
+- Expected Output:
+- Errors (if any):
+"""
+
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f" An error occurred: {e}")
+        exit(1)
+
+
+if __name__ == "__main__":
+    code_content = readcode("code.py")
+    result = coder(code_content)
+
+    print("\n🔍 Code Analysis 🔍\n")
+    print("-" * 50)
+    print(result)
